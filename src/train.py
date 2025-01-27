@@ -4,7 +4,7 @@ from absl import app
 
 from tqdm import tqdm
 
-from torch.utils import tensorboard
+# from torch.utils import tensorboard
 
 import torchvision
 import torch

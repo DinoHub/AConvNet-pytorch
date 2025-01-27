@@ -23,7 +23,6 @@ FLAGS = flags.FLAGS
 
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
 def data_scaling(chip):
     r = chip.max() - chip.min()
     return (chip - chip.min()) / r
@@ -46,17 +45,28 @@ def generate(src_path, dst_path, is_train, chip_size, patch_size, use_phase, dat
 
     image_list = glob.glob(os.path.join(src_path, '*'))
 
+    # For family clf remapping
+    tank_ids = [7, 6, 0] # remap to class_id 0
+    # End of family clf remapping
     for path in image_list:
         label, _images = _mstar.read(path)
+        if label['class_id'] in tank_ids:
+            label['class_id'] = 0
+            label['target_type'] = 'tank'
+            label['serial_number'] = 'A51'
+        else:
+            label['class_id'] = 1
+            label['target_type'] = "others"
+            label['serial_number'] = "E12"
         for i, _image in enumerate(_images):
-            name = os.path.splitext(os.path.basename(path))[0]
+            name = os.path.basename(path).replace(".", "")
+            # name = os.path.splitext(os.path.basename(path))[0]
             with open(os.path.join(dst_path, f'{name}-{i}.json'), mode='w', encoding='utf-8') as f:
                 json.dump(label, f, ensure_ascii=False, indent=2)
 
             # _image = log_scale(_image)
             np.save(os.path.join(dst_path, f'{name}-{i}.npy'), _image)
             # Image.fromarray(data_scaling(_image)).convert('L').save(os.path.join(dst_path, f'{name}-{i}.bmp'))
-
 
 def main(_):
     dataset_root = os.path.join(project_root, FLAGS.image_root, FLAGS.dataset)
@@ -73,7 +83,8 @@ def main(_):
             os.path.join(raw_root, mode, target),
             os.path.join(output_root, target),
             FLAGS.is_train, FLAGS.chip_size, FLAGS.patch_size, FLAGS.use_phase, FLAGS.dataset
-        ) for target in mstar.target_name[FLAGS.dataset]
+        ) for target in ["tank", "others"]
+        # ) for target in mstar.target_name[FLAGS.dataset]
     ]
 
     with Pool(10) as p:

@@ -1,5 +1,112 @@
 # AConvNet
 
+## Quick Start Guide for Dinohub (classes: "tank", "others")
+
+1. Build the Docker image using the following command:
+
+    ```bash
+    docker build . -t aconvnet
+    ```
+
+2. Edit the `WORKSPACE` variable in `run_docker.sh` as needed.
+
+3. Start the Docker container:
+
+    ```bash
+    bash run_docker.sh
+    ```
+
+---
+
+### Training on SOC
+
+1. **Prepare the Training Dataset**  
+   - Navigate to the `dataset/soc/raw` folder.
+   - Place your raw training dataset (e.g., extracted from `dataset.zip` or your own processed dataset) into this folder. Ensure it is named `train`.
+
+2. **Generate the Training Dataset**  
+   - Run the following command:
+
+     ```bash
+     cd src/data
+     python3 generate_dataset.py --is_train=True --use_phase=True --chip_size=100 --patch_size=94 --dataset=soc
+     ```
+
+     *This process may take ~30 minutes depending on your dataset size.*
+
+3. **Update Configuration**  
+   - Open `experiments/config/AConvNet-SOC.json` and ensure the settings are correct:
+     - Set `num_classes` to 2 (e.g., `"tank", "others"`).
+
+4. **Train the Model**  
+   - Run the training script:
+
+     ```bash
+     cd ..
+     python3 train.py --config_name=config/AConvNet-SOC.json
+     ```
+
+   - **Important**: Once training is done, copy the `experiments` folder (or at least the `experiments/history` and `experiments/model` folders) to save the weights. Training overwrites the existing weights.
+
+---
+
+### Testing on SOC
+
+1. **Prepare the Test Dataset**  
+   - Navigate to the `dataset/soc/raw` folder.
+   - Place your raw testing dataset into this folder and name it `test`.
+
+2. **Generate the Test Dataset**  
+   - Run the following command:
+
+     ```bash
+     cd src/data
+     python3 generate_dataset.py --is_train=False --use_phase=True --chip_size=128 --patch_size=128 --dataset=soc
+     ```
+
+   - If you plan to use the original 10 MSTAR classes, replace `generate_dataset.py` with `generate_dataset_old.py`.
+
+3. **Run Jupyter Notebook for Evaluation**  
+   - Start a Jupyter Notebook server within your Docker container:
+
+     ```bash
+     jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+     ```
+
+   - For SOC, duplicate one of the `notebook/experiments-SOC-*.ipynb` notebooks to evaluate your results (accuracy and confusion matrix).  
+     Ensure the model weights to test are located in the `experiments` folder.
+
+---
+
+### Common Issues
+
+- **Port Conflicts**  
+  If running multiple containers, ensure each uses a unique port. Or, to avoid conflicts, use the same Docker container:
+  1. Find your existing container ID:
+
+      ```bash
+      docker ps -a
+      ```
+
+  2. Enter the running container:
+
+      ```bash
+      docker exec -it CONTAINER_ID bash
+      ```
+
+---
+
+## Additional Notes
+
+- Training and testing scripts are reconfigured to support a 2-class setup (`tank` and `others`). For a 10-class setup, use the original repo's code.
+- Keep backups of important files (e.g., `experiments/history`, `experiments/model`) to prevent data loss when training multiple models.
+
+---
+
+## Original Repo
+
+### Training
+
 ### Target Classification Using the Deep Convolutional Networks for SAR Images
 
 This repository is reproduced-implementation of AConvNet which recognize target from MSTAR dataset.

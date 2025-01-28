@@ -103,6 +103,50 @@
 
 ---
 
+### Converting MSTAR Images
+
+This section explains how to convert MSTAR images to JPEG format using the `mstar2jpeg` tool.
+
+#### Finding Specific Azimuth Angles
+
+Use the `dataset/find_examples.py` script to locate images with specific azimuth angles.
+
+#### Building the Conversion Tool
+
+To build the `mstar2jpeg` tool, run this in your Docker container:
+
+```bash
+cd /workspace/mstar_conv_tools/mstar2jpeg
+make -f mstar2jpeg.mk
+```
+
+#### Converting Images
+
+Run the mstar2jpeg tool with the following syntax:
+
+```bash
+./mstar2jpeg -i <MSTAR File> -o <JPEG File> [options]
+```
+
+Example:
+
+```bash
+./mstar2jpeg -i /workspace/dataset/soc/raw/test/T62/HB15254.016 -o /workspace/dataset/HB15254-016.jpeg
+```
+
+#### Available Options
+
+- -e: Auto-contrast enhancement (default: none)
+- -q <quality>: Set JPEG compression quality (range: 5-95, default: 75)
+- -h: Dump Phoenix header in ASCII format (default: none)
+- -v: Verbose mode (default: quiet)
+
+**Example from Original Documentation:**
+
+```bash
+mstar2jpeg -i <MSTAR File> -o <JPEG File> [-e] [-q <quality>] [-h] [-v]
+```
+
 ## Original Repo
 
 ### Training
